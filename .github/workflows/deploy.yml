@@ -99,7 +99,7 @@ jobs:
 
       - name: Print payload
         run: |
-          SERVICE_NAME=$(echo "${{ github.event.repository.name }}" | sed 's/^tic-tac-toe-//')
+          SERVICE_NAME=$(echo "${{ github.event.repository.name }}" | sed 's/^${{ secrets.PROJECT_PREFIX }}-//')
           
           PAYLOAD=$(cat <<EOF
           {
@@ -120,7 +120,7 @@ jobs:
 
       - name: Trigger monorepo build
         run: |
-          SERVICE_NAME=$(echo "${{ github.event.repository.name }}" | sed 's/^tic-tac-toe-//')
+          SERVICE_NAME=$(echo "${{ github.event.repository.name }}" | sed 's/^${{ secrets.PROJECT_PREFIX }}-//')
           curl -X POST \
             -H "Accept: application/vnd.github+json" \
             -H "Authorization: Bearer ${{ secrets.GH_PAT }}" \
