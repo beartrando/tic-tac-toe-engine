@@ -10,7 +10,7 @@ export class EngineStreamContainer {
     }
 
     connect(stream: EngineStream): void {
-        logger.log('ENGINE STREAM CONNECT', stream);
+        logger.log('ENGINE STREAM CONNECT');
         this.stream = stream;
     }
 
