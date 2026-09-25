@@ -19,7 +19,11 @@ export class EngineHandler {
     }
 
     async battleChannel(call: EngineStream) {
+
+        logger.log('>>> BATTLE CHANNEL RPC RECEIVED');
+
         this.engineStreamContainer.connect(call);
+
         try {
             // слушаем входящие события от Streaming
             call.on("data", async (event: engineProto.BattleRequest) => {
