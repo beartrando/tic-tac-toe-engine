@@ -9,10 +9,18 @@ export class EngineStreamContainer {
     }
 
     connect(stream: EngineStream): void {
+        logger.log('ENGINE STREAM CONNECT', stream);
         this.stream = stream;
     }
 
     disconnect(stream: EngineStream): void {
+        logger.log(
+            'ENGINE STREAM DISCONNECT',
+            stream,
+            'current === stream:',
+            this.stream === stream,
+        );
+
         if (this.stream === stream) {
             this.stream = null;
         }
