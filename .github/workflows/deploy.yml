@@ -124,6 +124,6 @@ jobs:
           curl -X POST \
             -H "Accept: application/vnd.github+json" \
             -H "Authorization: Bearer ${{ secrets.GH_PAT }}" \
-            https://api.github.com/repos/beartrando/tic-tac-toe-infra/dispatches \
+            https://api.github.com/repos/beartrando/${{ secrets.PROJECT_PREFIX }}-infra/dispatches \
             -d "{\"event_type\":\"service-updated\",\"client_payload\":{\"service\":\"$SERVICE_NAME\",\"repo\":\"${GITHUB_REPOSITORY}\",\"branch\":\"${GITHUB_REF_NAME}\",\"version\":\"${{ needs.determine-version.outputs.version }}\",\"sha\":\"${{ github.sha }}\"}}"
           
