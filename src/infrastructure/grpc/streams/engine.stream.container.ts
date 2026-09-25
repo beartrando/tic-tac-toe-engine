@@ -17,7 +17,7 @@ export class EngineStreamContainer {
     disconnect(stream: EngineStream): void {
         logger.log(
             'ENGINE STREAM DISCONNECT',
-            stream,
+            // stream,
             'current === stream:',
             this.stream === stream,
         );
