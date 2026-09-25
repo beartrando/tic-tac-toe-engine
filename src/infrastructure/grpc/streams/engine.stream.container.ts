@@ -1,5 +1,6 @@
 import EngineStream from "../types/engine.stream";
 import * as engineProto from "../../../contracts/proto/engine";
+import logger from "@shared/logger";
 
 export class EngineStreamContainer {
     private stream: EngineStream | null = null;
