@@ -46,7 +46,7 @@ export class BattleService {
             // logger.log(resp);
 
             try {
-                this.engineStreamContainer.write(resp);
+                this.engineStreamContainer.broadcast(resp);
             } catch (err) {
                 logger.warn({err});
             }
@@ -77,7 +77,7 @@ export class BattleService {
         const resp = engineProto.BattleResponse.create({battle: battleObject})
         // logger.log(resp);
 
-        this.engineStreamContainer.write(resp);
+        this.engineStreamContainer.broadcast(resp);
     }
 
     async move(battleMove: BattleMove): Promise<void> {
@@ -102,7 +102,7 @@ export class BattleService {
 
         const resp = engineProto.BattleResponse.create({battle: battleObject})
 
-        this.engineStreamContainer.write(resp);
+        this.engineStreamContainer.broadcast(resp);
 
         if (battleEntity.status.equals(BattleStatus.create(BattleStatusEnum.Finished))) {
 
@@ -137,7 +137,7 @@ export class BattleService {
 
         const resp = engineProto.BattleResponse.create({battle: battleObject})
 
-        this.engineStreamContainer.write(resp);
+        this.engineStreamContainer.broadcast(resp);
     }
 
     async leave(battleLeave: BattleLeave): Promise<void> {
@@ -154,7 +154,7 @@ export class BattleService {
 
             const resp = engineProto.BattleResponse.create({battle: battleObject})
 
-            this.engineStreamContainer.write(resp);
+            this.engineStreamContainer.broadcast(resp);
         } else {
             this.jobService.enqueue(this.topicBattleTerminated, battleLeave.battleId);
         }

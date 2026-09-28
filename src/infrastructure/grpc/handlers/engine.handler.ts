@@ -22,7 +22,7 @@ export class EngineHandler {
 
         logger.log('>>> BATTLE CHANNEL RPC RECEIVED');
 
-        this.engineStreamContainer.connect(call);
+        this.engineStreamContainer.add(call);
 
         try {
             // слушаем входящие события от Streaming
@@ -58,18 +58,18 @@ export class EngineHandler {
 
             call.on("end", () => {
                 call.end();
-                this.engineStreamContainer.disconnect(call);
+                this.engineStreamContainer.remove(call);
             });
 
             call.on("error", (err) => {
-                this.engineStreamContainer.disconnect(call);
+                this.engineStreamContainer.remove(call);
                 console.error("Stream error:", err);
                 call.end();
             });
 
             logger.log('Grpc streaming connection established');
         } catch (err: any) {
-            this.engineStreamContainer.disconnect(call);
+            this.engineStreamContainer.remove(call);
             console.error("battleChannel error:", err);
             // callbackError(callback, err);
             call.end();

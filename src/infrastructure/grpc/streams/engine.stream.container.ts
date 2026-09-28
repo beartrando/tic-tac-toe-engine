@@ -3,36 +3,31 @@ import * as engineProto from "../../../contracts/proto/engine";
 import logger from "@shared/logger";
 
 export class EngineStreamContainer {
-    private stream: EngineStream | null = null;
+    private readonly streams = new Set<EngineStream>();
 
-    get current(): EngineStream | null {
-        return this.stream;
-    }
-
-    connect(stream: EngineStream): void {
+    add(stream: EngineStream): void {
         logger.log('ENGINE STREAM CONNECT');
-        this.stream = stream;
+        this.streams.add(stream);
     }
 
-    disconnect(stream: EngineStream): void {
-        logger.log(
-            'ENGINE STREAM DISCONNECT',
-            // stream,
-            'current === stream:',
-            this.stream === stream,
-        );
-
-        if (this.stream === stream) {
-            this.stream = null;
-        }
+    remove(stream: EngineStream): void {
+        logger.log('ENGINE STREAM DISCONNECT');
+        this.streams.delete(stream);
     }
 
-    write(resp: engineProto.BattleResponse): void {
-        if (!this.stream) {
+    broadcast(resp: engineProto.BattleResponse): void {
+        if (!this.size) {
             throw new Error("Engine stream is not connected");
         }
 
-        this.stream.write(resp);
+        for (const stream of this.streams) {
+            stream.write(resp);
+        }
+    }
+
+
+    get size(): number {
+        return this.streams.size;
     }
 }
 
