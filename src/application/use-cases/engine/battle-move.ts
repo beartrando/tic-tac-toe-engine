@@ -39,4 +39,3 @@ export class BattleMoveUseCase {
 
 
 export default BattleMoveUseCase;
-

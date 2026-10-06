@@ -30,4 +30,3 @@ export class BattleLeaveUseCase {
 
 
 export default BattleLeaveUseCase;
-

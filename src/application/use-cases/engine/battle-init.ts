@@ -33,4 +33,3 @@ export class BattleCreateUseCase {
 
 
 export default BattleCreateUseCase;
-

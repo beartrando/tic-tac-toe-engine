@@ -27,4 +27,3 @@ export class BattleMatchedConsumer implements UseCaseInterface<battleProto.Battl
 }
 
 export default BattleMatchedConsumer;
-

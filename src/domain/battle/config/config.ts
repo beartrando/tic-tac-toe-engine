@@ -4,4 +4,3 @@ export const domainBattleConfig = {
 };
 
 export default domainBattleConfig;
-

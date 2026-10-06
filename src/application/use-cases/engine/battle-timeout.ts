@@ -45,4 +45,3 @@ export class BattleTimeoutUseCase {
 
 
 export default BattleTimeoutUseCase;
-

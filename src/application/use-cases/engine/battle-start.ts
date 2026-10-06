@@ -29,4 +29,3 @@ export class BattleStartUseCase {
 
 
 export default BattleStartUseCase;
-

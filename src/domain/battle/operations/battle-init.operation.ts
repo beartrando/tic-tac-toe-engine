@@ -29,4 +29,3 @@ export class BattleInitOperation {
 }
 
 export default BattleInitOperation;
-

@@ -21,4 +21,3 @@ export class BattleStatusReadyRule {
 }
 
 export default BattleStatusReadyRule;
-

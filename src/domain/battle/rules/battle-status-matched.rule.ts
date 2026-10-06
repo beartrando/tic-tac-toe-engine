@@ -21,4 +21,3 @@ export class BattleStatusMatchedRule {
 }
 
 export default BattleStatusMatchedRule;
-

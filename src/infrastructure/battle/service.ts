@@ -165,4 +165,3 @@ export class BattleService {
 }
 
 export default BattleService;
-
