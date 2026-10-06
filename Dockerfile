@@ -18,7 +18,6 @@ COPY services/engine/package*.json ./services/engine/
 COPY services/engine/jest.config.js ./services/engine/
 COPY services/engine/tsconfig.json ./services/engine/
 COPY services/engine/src ./services/engine/src/
-COPY services/engine/__tests__ ./services/engine/__tests__/
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
