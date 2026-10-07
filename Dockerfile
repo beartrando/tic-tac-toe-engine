@@ -34,7 +34,7 @@ RUN corepack enable && corepack prepare pnpm@11.9.0 --activate
 FROM base AS deps
 
 RUN pnpm fetch
-RUN pnpm install --offline --frozen-lockfile
+RUN pnpm install --offline --frozen-lockfile --ignore-scripts
 
 RUN mkdir -p ./services/engine/src/contracts/proto
 RUN pnpm --filter engine proto:generate
