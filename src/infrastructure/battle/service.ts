@@ -1,5 +1,5 @@
+import TimerServiceInterface from "@shared/timer";
 import JobService from "../job/service";
-import TimerServiceInterface from "../timer/interfaces/timer-service.interface";
 import BattleLeaveUseCase from "../../application/use-cases/engine/battle-leave";
 import BattleMoveUseCase from "../../application/use-cases/engine/battle-move";
 import BattleCreateUseCase from "../../application/use-cases/engine/battle-init";
