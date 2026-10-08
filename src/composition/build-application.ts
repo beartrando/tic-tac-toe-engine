@@ -34,7 +34,7 @@ import messageConsumersConfig from "../infrastructure/message/configs/consumers.
 import BattleMatchedConsumer from "../infrastructure/message/consumers/battle-matched.consumer";
 import messageProducersConfig from "../infrastructure/message/configs/producers.config";
 
-import { TimerService } from "@shared/timer";
+import {TimerService} from "@shared/timer";
 import BattleTimeoutCallbackFactory from "../infrastructure/timer/callbacks/battle-timeout-callback-factory";
 import domainBattleConfig from "../domain/battle/config/config";
 import TimerCallbackFactoryHolder from "../infrastructure/timer/callback-factory-holder";
