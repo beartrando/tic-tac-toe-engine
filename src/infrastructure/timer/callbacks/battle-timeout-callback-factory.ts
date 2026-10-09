@@ -1,5 +1,4 @@
-import TimerCallbackInterface from "../interfaces/timer-callback.interface";
-import TimerCallbackFactoryInterface from "../interfaces/timer-callback-factory.interface";
+import {TimerCallbackInterface, TimerCallbackFactoryInterface} from "@shared/timer";
 import BattleService from "../../battle/service";
 import BattleId from "../../../domain/battle/value-objects/battle-id.vo";
 
