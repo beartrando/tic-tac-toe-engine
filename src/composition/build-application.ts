@@ -34,10 +34,9 @@ import messageConsumersConfig from "../infrastructure/message/configs/consumers.
 import BattleMatchedConsumer from "../infrastructure/message/consumers/battle-matched.consumer";
 import messageProducersConfig from "../infrastructure/message/configs/producers.config";
 
-import TimerService from "../infrastructure/timer/service";
+import {TimerService, TimerCallbackFactoryHolder} from "@shared/timer";
 import BattleTimeoutCallbackFactory from "../infrastructure/timer/callbacks/battle-timeout-callback-factory";
 import domainBattleConfig from "../domain/battle/config/config";
-import TimerCallbackFactoryHolder from "../infrastructure/timer/callback-factory-holder";
 import BattleEntity from "../domain/battle/battle.entity";
 import BattleService from "../infrastructure/battle/service";
 import EngineStreamContainer from "../infrastructure/grpc/streams/engine.stream.container";
