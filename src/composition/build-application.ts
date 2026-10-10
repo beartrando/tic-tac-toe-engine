@@ -31,7 +31,7 @@ import jobConfig from "../infrastructure/job/job.config";
 import MessageService from "../infrastructure/message/service";
 import messageConfig from "../infrastructure/message/configs/message.config";
 import messageConsumersConfig from "../infrastructure/message/configs/consumers.config";
-import BattleMatchedConsumer from "../infrastructure/message/consumers/battle-matched.consumer";
+import MatchmakingMatchedConsumer from "../infrastructure/message/consumers/matchmaking-matched.consumer";
 import messageProducersConfig from "../infrastructure/message/configs/producers.config";
 
 import {TimerService, TimerCallbackFactoryHolder} from "@shared/timer";
@@ -141,7 +141,7 @@ function buildApplication() {
     );
 
     // Message consumers
-    const battleMatchedConsumer = new BattleMatchedConsumer(
+    const matchmakingMatchedConsumer = new MatchmakingMatchedConsumer(
         battleService
     );
 
@@ -151,8 +151,8 @@ function buildApplication() {
     );
 
     messageService.addConsumer(
-        messageConsumersConfig.battleMatched,
-        battleMatchedConsumer.execute.bind(battleMatchedConsumer),
+        messageConsumersConfig.matchmakingMatched,
+        matchmakingMatchedConsumer.execute.bind(matchmakingMatchedConsumer),
     );
 
     // Health

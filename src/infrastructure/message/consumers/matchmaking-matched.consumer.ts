@@ -4,7 +4,7 @@ import logger from "@shared/logger";
 import UseCaseInterface from "../interfaces/use-case.interface";
 import BattleService from "../../battle/service";
 
-export class BattleMatchedConsumer implements UseCaseInterface<battleProto.BattleObject> {
+export class MatchmakingMatchedConsumer implements UseCaseInterface<battleProto.BattleObject> {
     constructor(
         private readonly battleService: BattleService,
     ) {
@@ -26,4 +26,4 @@ export class BattleMatchedConsumer implements UseCaseInterface<battleProto.Battl
 
 }
 
-export default BattleMatchedConsumer;
+export default MatchmakingMatchedConsumer;
