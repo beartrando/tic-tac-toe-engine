@@ -4,25 +4,27 @@ export class BattleBoard {
     readonly cells: readonly BattleCellValueEnum[];
 
     constructor(cells: readonly BattleCellValueEnum[]) {
-        if (cells.length !== 9) {
+        const values = cells.length === 0
+            ? Array(9).fill(BattleCellValueEnum.EMPTY)
+            : [...cells];
+
+        if (values.length !== 9) {
             throw new Error("BattleBoard must contain 9 cells");
         }
 
         if (
-            cells.some(
+            values.some(
                 cell => !Object.values(BattleCellValueEnum).includes(cell),
             )
         ) {
             throw new Error("Invalid cell value");
         }
 
-        this.cells = [...cells];
+        this.cells = values;
     }
 
     static empty(): BattleBoard {
-        return new BattleBoard(
-            Array(9).fill(BattleCellValueEnum.EMPTY),
-        );
+        return new BattleBoard([]);
     }
 
     isEmpty(): boolean {
