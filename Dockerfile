@@ -17,6 +17,7 @@ COPY tsconfig.base.json ./
 COPY services/engine/package*.json ./services/engine/
 COPY services/engine/jest.config.js ./services/engine/
 COPY services/engine/tsconfig.json ./services/engine/
+COPY services/engine/jest.setup.ts ./services/engine/
 COPY services/engine/src ./services/engine/src/
 
 RUN apt-get update \
