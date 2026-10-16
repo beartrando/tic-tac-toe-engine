@@ -31,19 +31,19 @@ export class EngineHandler {
                     if (event.create) {
                         // logger.log(event);
                         const battleEntity: BattleEntity = BattleProtoMapper.toDomain(event.create);
-                        await this.battleService.create(battleEntity);
+                        await this.battleService.create(battleEntity, event.trackId);
                     } else if (event.start) {
                         // logger.log(event);
                         const battleStart = BattleStartProtoMapper.toDomain(event.start);
-                        await this.battleService.start(battleStart);
+                        await this.battleService.start(battleStart, event.trackId);
                     } else if (event.move) {
                         // logger.log(event);
                         const battleMove = BattleMoveProtoMapper.toDomain(event.move);
-                        await this.battleService.move(battleMove);
+                        await this.battleService.move(battleMove, event.trackId);
                     } else if (event.leave) {
                         // logger.log(event);
                         const battleLeave = BattleLeaveProtoMapper.toDomain(event.leave);
-                        await this.battleService.leave(battleLeave);
+                        await this.battleService.leave(battleLeave, event.trackId);
                     } else if (event.ping) {
                         // logger.info('Streaming-engine stream Ping');
                         const ping = emptyProto.Empty.create({});
