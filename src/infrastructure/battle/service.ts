@@ -1,3 +1,4 @@
+import {randomUUID} from "crypto";
 import {TimerServiceInterface} from "@shared/timer";
 import JobService from "../job/service";
 import BattleLeaveUseCase from "../../application/use-cases/engine/battle-leave";
@@ -7,6 +8,7 @@ import BattleLeave from "../../domain/battle/value-objects/battle-leave.vo";
 import BattleEntity from "../../domain/battle/battle.entity";
 import EngineStreamContainer from "../grpc/streams/engine.stream.container";
 import * as engineProto from "../../contracts/proto/engine";
+import * as battleProto from "../../contracts/proto/battle";
 import BattleProtoMapper from "../grpc/mappers/battle.proto.mapper";
 import BattleMove from "../../domain/battle/value-objects/battle-move.vo";
 import BattleStatusEnum from "../../domain/battle/enums/battle-status.enum";
@@ -36,13 +38,15 @@ export class BattleService {
     }
 
     async timeout(battleId: BattleId): Promise<void> {
+        const trackId = randomUUID();
+
         const battleEntity = await this.battleTimeoutUseCase.execute(battleId);
         if (battleEntity) {
             const battleObject = BattleProtoMapper.toProto(battleEntity);
 
-            this.jobService.enqueue(this.topicBattleUpdated, battleObject);
+            this.jobService.enqueue(this.topicBattleUpdated, this.tracedBattle(trackId, battleObject));
 
-            const resp = engineProto.BattleResponse.create({battle: battleObject})
+            const resp = engineProto.BattleResponse.create({battle: battleObject, trackId})
             // logger.log(resp);
 
             try {
@@ -51,13 +55,13 @@ export class BattleService {
                 logger.warn({err});
             }
         } else {
-            this.jobService.enqueue(this.topicBattleTerminated, battleId);
+            this.jobService.enqueue(this.topicBattleTerminated, this.tracedBattleId(trackId, battleId));
         }
 
         this.timerService.stop(battleId.value);
     }
 
-    async create(battleEntity: BattleEntity): Promise<void> {
+    async create(battleEntity: BattleEntity, trackId?: string): Promise<void> {
 
         // logger.log(battleEntity);
 
@@ -71,22 +75,22 @@ export class BattleService {
 
         const battleObject = BattleProtoMapper.toProto(initedBattle);
 
-        this.jobService.enqueue(this.topicBattleStarted, battleObject);
-        this.jobService.enqueue(this.topicBattleUpdated, battleObject);
+        this.jobService.enqueue(this.topicBattleStarted, this.tracedBattle(trackId, battleObject));
+        this.jobService.enqueue(this.topicBattleUpdated, this.tracedBattle(trackId, battleObject));
 
-        const resp = engineProto.BattleResponse.create({battle: battleObject})
+        const resp = engineProto.BattleResponse.create({battle: battleObject, trackId})
         // logger.log(resp);
 
         this.engineStreamContainer.broadcast(resp);
     }
 
-    async move(battleMove: BattleMove): Promise<void> {
+    async move(battleMove: BattleMove, trackId?: string): Promise<void> {
 
         const battleEntity = await this.battleMoveUseCase.execute(battleMove);
 
         if (!battleEntity) {
 
-            this.jobService.enqueue(this.topicBattleTerminated, battleMove.battleId);
+            this.jobService.enqueue(this.topicBattleTerminated, this.tracedBattleId(trackId, battleMove.battleId));
             return;
         }
 
@@ -98,26 +102,26 @@ export class BattleService {
 
         const battleObject = BattleProtoMapper.toProto(battleEntity);
 
-        this.jobService.enqueue(this.topicBattleUpdated, battleObject);
+        this.jobService.enqueue(this.topicBattleUpdated, this.tracedBattle(trackId, battleObject));
 
-        const resp = engineProto.BattleResponse.create({battle: battleObject})
+        const resp = engineProto.BattleResponse.create({battle: battleObject, trackId})
 
         this.engineStreamContainer.broadcast(resp);
 
         if (battleEntity.status.equals(BattleStatus.create(BattleStatusEnum.Finished))) {
 
-            this.jobService.enqueue(this.topicBattleTerminated, battleEntity.id);
+            this.jobService.enqueue(this.topicBattleTerminated, this.tracedBattleId(trackId, battleEntity.id));
 
             this.timerService.stop(battleEntity.id.value);
         }
     }
 
-    async start(battleStart: BattleStart): Promise<void> {
+    async start(battleStart: BattleStart, trackId?: string): Promise<void> {
         const battleEntity = await this.battleStartUseCase.execute(battleStart);
 
         if (!battleEntity) {
 
-            this.jobService.enqueue(this.topicBattleTerminated, battleStart.battleId);
+            this.jobService.enqueue(this.topicBattleTerminated, this.tracedBattleId(trackId, battleStart.battleId));
             return;
         }
 
@@ -133,14 +137,14 @@ export class BattleService {
 
         const battleObject = BattleProtoMapper.toProto(battleEntity);
 
-        this.jobService.enqueue(this.topicBattleUpdated, battleObject);
+        this.jobService.enqueue(this.topicBattleUpdated, this.tracedBattle(trackId, battleObject));
 
-        const resp = engineProto.BattleResponse.create({battle: battleObject})
+        const resp = engineProto.BattleResponse.create({battle: battleObject, trackId})
 
         this.engineStreamContainer.broadcast(resp);
     }
 
-    async leave(battleLeave: BattleLeave): Promise<void> {
+    async leave(battleLeave: BattleLeave, trackId?: string): Promise<void> {
         // logger.log(battleLeave);
 
         const battleEntity = await this.battleLeaveUseCase.execute(battleLeave);
@@ -150,16 +154,24 @@ export class BattleService {
 
             const battleObject = BattleProtoMapper.toProto(battleEntity);
 
-            this.jobService.enqueue(this.topicBattleUpdated, battleObject);
+            this.jobService.enqueue(this.topicBattleUpdated, this.tracedBattle(trackId, battleObject));
 
-            const resp = engineProto.BattleResponse.create({battle: battleObject})
+            const resp = engineProto.BattleResponse.create({battle: battleObject, trackId})
 
             this.engineStreamContainer.broadcast(resp);
         } else {
-            this.jobService.enqueue(this.topicBattleTerminated, battleLeave.battleId);
+            this.jobService.enqueue(this.topicBattleTerminated, this.tracedBattleId(trackId, battleLeave.battleId));
         }
 
         this.timerService.stop(battleLeave.battleId.value);
+    }
+
+    private tracedBattle(trackId: string | undefined, battle: battleProto.BattleObject): battleProto.TracedBattle {
+        return battleProto.TracedBattle.create({trackId, battle});
+    }
+
+    private tracedBattleId(trackId: string | undefined, battleId: BattleId): battleProto.TracedBattleId {
+        return battleProto.TracedBattleId.create({trackId, battleId: battleId.value});
     }
 
 }

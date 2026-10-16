@@ -7,11 +7,10 @@ import BattlePlayerIds from "../../../domain/battle/value-objects/battle-player-
 import ProfileId from "../../../domain/profile/value-objects/profile-id.vo";
 
 export class BattleProtoMapper {
-    static toProto(battle: BattleEntity, trackId?: string): battleProto.BattleObject {
+    static toProto(battle: BattleEntity): battleProto.BattleObject {
 
         return battleProto.BattleObject.create({
             id: battle.id.value,
-            trackId,
             playerIds: battle.playerIds.value.map((id: BattleId) => id.value),
             board: BattleBoardProtoMapper.toProto(battle.board),
             status: BattleStatusProtoMapper.toProto(battle.status),
