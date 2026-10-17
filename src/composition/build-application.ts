@@ -1,7 +1,8 @@
 import Application from "../application/application";
 
-import {ElasticService} from "@shared/elastic";
+import {ElasticService, MessageLogger} from "@shared/elastic";
 import elasticConfig from "../infrastructure/elastic/elastic.config";
+import messagesConfig from "../infrastructure/elastic/messages.config";
 import BattleOperationLogger from "../infrastructure/elastic/battle-operation-logger";
 
 import HealthUseCase from "../application/use-cases/health/health";
@@ -53,6 +54,12 @@ import BattleStatusStartedRule from "../domain/battle/rules/battle-status-starte
 function buildApplication() {
     // Infrastructure
     const authService = new AuthService(authConfig);
+
+    // Elasticsearch: операции по баттлам + транспортные сообщения (in/out)
+    const elasticService = new ElasticService(elasticConfig);
+
+    const messageLogger = new MessageLogger(elasticService, messagesConfig);
+
     const timerCallbackFactoryHolder = new TimerCallbackFactoryHolder<BattleId>();
     const timerService =
         new TimerService<string, BattleId>(timerCallbackFactoryHolder, domainBattleConfig.battleTurnTimeLimit);
@@ -63,6 +70,7 @@ function buildApplication() {
         jobConfig,
         messageConfig,
         messageProducersConfig,
+        messageLogger,
     );
 
     const battleStatusStartedRule = new BattleStatusStartedRule();
@@ -107,11 +115,9 @@ function buildApplication() {
         battleStatusStartedRule
     );
 
-    const engineStreamContainer = new EngineStreamContainer();
+    const engineStreamContainer = new EngineStreamContainer(messageLogger);
 
     // Elasticsearch: складываем операции по баттлам
-    const elasticService = new ElasticService(elasticConfig);
-
     const battleOperationLogger = new BattleOperationLogger(elasticService);
 
     const battleService = new BattleService(
@@ -148,6 +154,7 @@ function buildApplication() {
     const engineHandler = new EngineHandler(
         battleService,
         engineStreamContainer,
+        messageLogger,
     );
 
     // Message consumers
@@ -158,6 +165,7 @@ function buildApplication() {
     const messageService = new MessageService(
         messageConfig,
         messageConsumersConfig,
+        messageLogger,
     );
 
     messageService.addConsumer(
