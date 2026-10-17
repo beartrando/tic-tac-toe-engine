@@ -36,12 +36,6 @@ export class Application {
             await this.stateStoreService.start();
             await this.grpcService.start();
 
-            if (!await this.elasticService.check()) {
-                logger.warn(
-                    '⚠️ Elasticsearch is unavailable, battle operations will not be indexed',
-                );
-            }
-
             logger.info(
                 '🚀 Engine service started',
             );
