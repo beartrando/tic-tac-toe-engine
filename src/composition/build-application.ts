@@ -1,5 +1,9 @@
 import Application from "../application/application";
 
+import {ElasticService} from "@shared/elastic";
+import elasticConfig from "../infrastructure/elastic/elastic.config";
+import BattleOperationLogger from "../infrastructure/elastic/battle-operation-logger";
+
 import HealthUseCase from "../application/use-cases/health/health";
 import LivezUseCase from "../application/use-cases/health/livez";
 import ReadyzUseCase from "../application/use-cases/health/readyz";
@@ -105,6 +109,11 @@ function buildApplication() {
 
     const engineStreamContainer = new EngineStreamContainer();
 
+    // Elasticsearch: складываем операции по баттлам
+    const elasticService = new ElasticService(elasticConfig);
+
+    const battleOperationLogger = new BattleOperationLogger(elasticService);
+
     const battleService = new BattleService(
         battleTimeoutUseCase,
         battleCreateUseCase,
@@ -114,6 +123,7 @@ function buildApplication() {
         timerService,
         jobService,
         engineStreamContainer,
+        battleOperationLogger,
         messageProducersConfig.battleStarted,
         messageProducersConfig.battleUpdated,
         messageProducersConfig.battleTerminated,
@@ -182,6 +192,7 @@ function buildApplication() {
         jobService,
         messageService,
         cacheService,
+        elasticService,
     );
 }
 

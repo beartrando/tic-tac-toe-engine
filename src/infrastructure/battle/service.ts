@@ -18,6 +18,7 @@ import BattleStart from "../../domain/battle/value-objects/battle-start.vo";
 import BattleTimeoutUseCase from "../../application/use-cases/engine/battle-timeout";
 import BattleStartUseCase from "../../application/use-cases/engine/battle-start";
 import logger from "@shared/logger";
+import BattleOperationLogger from "../elastic/battle-operation-logger";
 
 export class BattleService {
     constructor(
@@ -29,6 +30,7 @@ export class BattleService {
         private readonly timerService: TimerServiceInterface<string, BattleId>,
         private readonly jobService: JobService,
         private readonly engineStreamContainer: EngineStreamContainer,
+        private readonly battleOperationLogger: BattleOperationLogger,
         private readonly topicBattleStarted: string,
         private readonly topicBattleUpdated: string,
         private readonly topicBattleTerminated: string,
@@ -39,6 +41,7 @@ export class BattleService {
 
     async timeout(battleId: BattleId): Promise<void> {
         const trackId = randomUUID();
+        const request = BattleOperationLogger.battleIdRequest(battleId);
 
         const battleEntity = await this.battleTimeoutUseCase.execute(battleId);
         if (battleEntity) {
@@ -54,8 +57,22 @@ export class BattleService {
             } catch (err) {
                 logger.warn({err});
             }
+
+            void this.battleOperationLogger.log(
+                'timeout',
+                trackId,
+                request,
+                BattleOperationLogger.success(battleEntity),
+            );
         } else {
             this.jobService.enqueue(this.topicBattleTerminated, this.tracedBattleId(trackId, battleId));
+
+            void this.battleOperationLogger.log(
+                'timeout',
+                trackId,
+                request,
+                BattleOperationLogger.failure('battle does not exist', null, true),
+            );
         }
 
         this.timerService.stop(battleId.value);
@@ -82,15 +99,31 @@ export class BattleService {
         // logger.log(resp);
 
         this.engineStreamContainer.broadcast(resp);
+
+        void this.battleOperationLogger.log(
+            'create',
+            trackId,
+            BattleOperationLogger.battleRequest(battleEntity),
+            BattleOperationLogger.success(initedBattle),
+        );
     }
 
     async move(battleMove: BattleMove, trackId?: string): Promise<void> {
+
+        const request = BattleOperationLogger.moveRequest(battleMove);
 
         const battleEntity = await this.battleMoveUseCase.execute(battleMove);
 
         if (!battleEntity) {
 
             this.jobService.enqueue(this.topicBattleTerminated, this.tracedBattleId(trackId, battleMove.battleId));
+
+            void this.battleOperationLogger.log(
+                'move',
+                trackId,
+                request,
+                BattleOperationLogger.failure('battle does not exist', null, true),
+            );
             return;
         }
 
@@ -108,24 +141,48 @@ export class BattleService {
 
         this.engineStreamContainer.broadcast(resp);
 
-        if (battleEntity.status.equals(BattleStatus.create(BattleStatusEnum.Finished))) {
+        const finished = battleEntity.status.equals(BattleStatus.create(BattleStatusEnum.Finished));
+
+        if (finished) {
 
             this.jobService.enqueue(this.topicBattleTerminated, this.tracedBattleId(trackId, battleEntity.id));
 
             this.timerService.stop(battleEntity.id.value);
         }
+
+        void this.battleOperationLogger.log(
+            'move',
+            trackId,
+            request,
+            BattleOperationLogger.success(battleEntity, finished),
+        );
     }
 
     async start(battleStart: BattleStart, trackId?: string): Promise<void> {
+        const request = BattleOperationLogger.startRequest(battleStart);
+
         const battleEntity = await this.battleStartUseCase.execute(battleStart);
 
         if (!battleEntity) {
 
             this.jobService.enqueue(this.topicBattleTerminated, this.tracedBattleId(trackId, battleStart.battleId));
+
+            void this.battleOperationLogger.log(
+                'start',
+                trackId,
+                request,
+                BattleOperationLogger.failure('battle does not exist', null, true),
+            );
             return;
         }
 
         if (!battleEntity.status.equals(BattleStatus.create(BattleStatusEnum.Started))) {
+            void this.battleOperationLogger.log(
+                'start',
+                trackId,
+                request,
+                BattleOperationLogger.failure('battle is not in Started status', battleEntity),
+            );
             return;
         }
 
@@ -142,10 +199,19 @@ export class BattleService {
         const resp = engineProto.BattleResponse.create({battle: battleObject, trackId})
 
         this.engineStreamContainer.broadcast(resp);
+
+        void this.battleOperationLogger.log(
+            'start',
+            trackId,
+            request,
+            BattleOperationLogger.success(battleEntity),
+        );
     }
 
     async leave(battleLeave: BattleLeave, trackId?: string): Promise<void> {
         // logger.log(battleLeave);
+
+        const request = BattleOperationLogger.leaveRequest(battleLeave);
 
         const battleEntity = await this.battleLeaveUseCase.execute(battleLeave);
         logger.log(battleEntity);
@@ -159,8 +225,22 @@ export class BattleService {
             const resp = engineProto.BattleResponse.create({battle: battleObject, trackId})
 
             this.engineStreamContainer.broadcast(resp);
+
+            void this.battleOperationLogger.log(
+                'leave',
+                trackId,
+                request,
+                BattleOperationLogger.success(battleEntity),
+            );
         } else {
             this.jobService.enqueue(this.topicBattleTerminated, this.tracedBattleId(trackId, battleLeave.battleId));
+
+            void this.battleOperationLogger.log(
+                'leave',
+                trackId,
+                request,
+                BattleOperationLogger.failure('battle does not exist', null, true),
+            );
         }
 
         this.timerService.stop(battleLeave.battleId.value);

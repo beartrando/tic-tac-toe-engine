@@ -43,6 +43,7 @@
     "@shared/pg-boss-manager": "workspace:*",
     "@shared/logger": "workspace:*",
     "@shared/errors": "workspace:*",
+    "@shared/elastic": "workspace:*",
     "ioredis": "^5.10.1",
     "@prisma/client": "^6.19.3",
     "pg-boss": "^12.15.0",
