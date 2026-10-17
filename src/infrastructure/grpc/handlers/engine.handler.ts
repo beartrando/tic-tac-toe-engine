@@ -1,6 +1,7 @@
 import * as engineProto from '../../../contracts/proto/engine';
 import * as emptyProto from '../../../contracts/proto/common/empty';
 import logger from "@shared/logger";
+import type {MessageLogger} from "@shared/elastic";
 import BattleEntity from "../../../domain/battle/battle.entity";
 import BattleProtoMapper from "../mappers/battle.proto.mapper";
 import BattleMoveProtoMapper from "../mappers/battle-move.proto.mapper";
@@ -9,12 +10,13 @@ import EngineStream from "../types/engine.stream";
 import EngineStreamContainer from "../streams/engine.stream.container";
 import BattleService from "../../battle/service";
 import BattleStartProtoMapper from "../mappers/battle-start-proto.mapper";
-
+import {BATTLE_CHANNEL_PATH} from "../grpc.constants";
 
 export class EngineHandler {
     constructor(
         private readonly battleService: BattleService,
         private readonly engineStreamContainer: EngineStreamContainer,
+        private readonly messageLogger?: MessageLogger,
     ) {
     }
 
@@ -27,6 +29,15 @@ export class EngineHandler {
         try {
             // слушаем входящие события от Streaming
             call.on("data", async (event: engineProto.BattleRequest) => {
+                if (!event.ping) {
+                    void this.messageLogger?.logIn(
+                        'grpc',
+                        BATTLE_CHANNEL_PATH,
+                        event,
+                        event.trackId,
+                    );
+                }
+
                 try {
                     if (event.create) {
                         // logger.log(event);
