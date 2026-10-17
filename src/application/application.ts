@@ -1,4 +1,5 @@
 import logger from "@shared/logger";
+import type {ElasticService} from "@shared/elastic";
 import GrpcService from "../infrastructure/grpc/service";
 import JobService from "../infrastructure/job/service";
 import MessageService from "../infrastructure/message/service";
@@ -12,6 +13,7 @@ export class Application {
         private readonly jobService: JobService,
         private readonly messageService: MessageService,
         private readonly cacheService: CacheService,
+        private readonly elasticService: ElasticService,
     ) {
     }
 
@@ -33,6 +35,13 @@ export class Application {
             await this.cacheService.start();
             await this.stateStoreService.start();
             await this.grpcService.start();
+
+            if (!await this.elasticService.check()) {
+                logger.warn(
+                    '⚠️ Elasticsearch is unavailable, battle operations will not be indexed',
+                );
+            }
+
             logger.info(
                 '🚀 Engine service started',
             );
@@ -51,6 +60,7 @@ export class Application {
         await this.cacheService.stop();
         await this.jobService.stop();
         await this.messageService.stop();
+        await this.elasticService.stop();
     }
 }
 
